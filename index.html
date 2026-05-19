@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
@@ -193,7 +193,7 @@
   </div>
 
   <script>
-    // ⚠️ REEMPLAZA ESTO CON TU URL DE APPS SCRIPT
+    // ⚠️ REEMPLAZA ESTO CON TU URL REAL DE APPS SCRIPT
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxLrNfgPxseNIfo76ElyO9q_0N-fRxM_ZUzpCZOVf64a_qQfHYZBnd6u2i8Slwa9VbQbA/exec';
     
     let selectedNumbers = [];
@@ -204,39 +204,53 @@
     };
     
     // Función helper para llamar a Apps Script
-    function callBackend(action, params) {
-      return fetch(SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, ...params })
-      })
-      .then(response => response.json())
-      .then(result => {
+    async function callBackend(action, params) {
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, ...params })
+        });
+        
+        if (!response.ok) {
+          throw new Error('HTTP error! status: ' + response.status);
+        }
+        
+        const result = await response.json();
+        
+        // Manejar diferentes formatos de respuesta
         if (result.success !== undefined && !result.success) {
           throw new Error(result.error || result.mensaje || 'Error desconocido');
         }
+        
         return result.data !== undefined ? result.data : result;
-      });
+      } catch (error) {
+        console.error('Error en callBackend:', error);
+        throw error;
+      }
     }
     
     window.addEventListener('load', function() {
+      console.log('🎬 Página cargada');
       cargarBoletosAleatorios();
     });
     
     function cargarBoletosAleatorios() {
+      console.log('📡 Cargando boletos...');
       document.getElementById('loading').style.display = 'block';
       document.getElementById('grid').innerHTML = '';
       
       callBackend('getBoletosDisponibles', { rifaId: 3 })
         .then(function(boletos) {
+          console.log('✅ Boletos recibidos:', boletos ? boletos.length : 0);
           window.availableNumbers = boletos || [];
           document.getElementById('loading').style.display = 'none';
           mostrarBoletosAleatorios();
         })
         .catch(function(error) {
-          console.error('Error:', error);
+          console.error('❌ Error:', error);
           document.getElementById('loading').innerHTML = 
-            '<div style="color: #fbbf24; padding: 20px;">⚠️ Error al cargar boletos. Recarga la página.</div>';
+            '<div style="color: #fbbf24; padding: 20px;">⚠️ Error al cargar boletos.<br><small>' + error.message + '</small></div>';
         });
     }
     
