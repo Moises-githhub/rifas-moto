@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rifas de Compas | Moto Crossmax 220</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body {
+      background: linear-gradient(rgba(102, 126, 234, 0.75), rgba(118, 75, 162, 0.75)),
+                  url('https://i.ibb.co/QvNbj4Pt/whatsmustang.jpg');
+      background-size: cover; background-position: center; background-attachment: fixed;
+      min-height: 100vh; padding: 20px;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    .header {
+      background: rgba(255, 255, 255, 0.98); padding: 25px; border-radius: 15px;
+      text-align: center; margin-bottom: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+    .header h1 { color: #1e40af; font-size: 2rem; margin-bottom: 5px; }
+    .header p { color: #6b7280; font-size: 1rem; }
+    .rifa-selector {
+      background: rgba(255, 255, 255, 0.98); padding: 25px; border-radius: 15px;
+      margin-bottom: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    }
+    .rifa-info {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      padding: 20px; border-radius: 12px; margin-bottom: 20px; border-left: 5px solid #f59e0b;
+    }
+    .rifa-info p { margin: 8px 0; font-size: 1rem; }
+    .search-box {
+      background: white; padding: 20px; border-radius: 12px;
+      margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .search-input {
+      width: 100%; padding: 15px; font-size: 1.2rem; border: 3px solid #10b981;
+      border-radius: 10px; text-align: center; margin-bottom: 10px; font-weight: 600;
+    }
+    .search-input:focus { outline: none; border-color: #059669; }
+    .btn-search {
+      width: 100%; padding: 15px; background: #10b981; color: white;
+      border: none; border-radius: 10px; font-weight: 700; font-size: 1.1rem;
+      cursor: pointer; transition: all 0.3s;
+    }
+    .btn-search:hover { background: #059669; transform: translateY(-2px); }
+    .search-result {
+      text-align: center; margin-top: 15px; padding: 15px;
+      border-radius: 8px; font-weight: 600; font-size: 1.1rem;
+    }
+    .search-result.available { background: #d1fae5; color: #059669; }
+    .search-result.sold { background: #fee2e2; color: #dc2626; }
+    .random-section {
+      background: white; padding: 20px; border-radius: 12px;
+      margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .random-section h3 { color: #1e40af; margin-bottom: 15px; text-align: center; }
+    .btn-package {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      color: white; border: none; padding: 20px 10px; border-radius: 12px;
+      font-weight: 700; cursor: pointer; transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); text-align: center;
+    }
+    .btn-package:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5); }
+    .btn-package small { display: block; margin-top: 5px; font-size: 0.9rem; opacity: 0.9; }
+    .number-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 8px; margin: 20px 0; }
+    .number {
+      padding: 12px 5px; text-align: center; border-radius: 8px; font-weight: 700;
+      font-size: 0.95rem; cursor: pointer; transition: all 0.2s; user-select: none;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    .number:hover:not(.sold) { transform: scale(1.15); box-shadow: 0 4px 12px rgba(0,0,0,0.4); }
+    .available { background: #10b981; color: white; }
+    .sold { background: #ef4444; color: white; opacity: 0.6; cursor: not-allowed; }
+    .selected { background: #f59e0b; color: white; animation: pulse 0.3s ease; }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.2); } 100% { transform: scale(1); } }
+    .loading { text-align: center; padding: 50px; color: white; font-size: 1.1rem; font-weight: 600; }
+    .loading i { font-size: 3rem; animation: spin 1s linear infinite; margin-bottom: 15px; display: block; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .btn {
+      background: #25d366; color: white; border: none; padding: 18px 30px;
+      border-radius: 50px; font-weight: 700; cursor: pointer; width: 100%;
+      font-size: 1.2rem; margin-top: 20px; transition: all 0.3s;
+      box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
+    }
+    .btn:hover:not(:disabled) { background: #128c7e; transform: translateY(-2px); }
+    .btn:disabled { background: #9ca3af; cursor: not-allowed; }
+    .legend { display: flex; gap: 20px; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; color: white; font-weight: 600; }
+    .legend-dot { width: 25px; height: 25px; border-radius: 6px; }
+    .cart-info {
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+      padding: 20px; border-radius: 12px; margin-top: 20px;
+      text-align: center; border: 2px solid #10b981;
+    }
+    .cart-total { font-size: 2rem; font-weight: 800; color: #059669; margin-top: 10px; }
+    #modalPago, #modalDatos {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center;
+      align-items: center; padding: 15px;
+    }
+    #modalPago > div, #modalDatos > div {
+      background: white; padding: 25px; border-radius: 15px;
+      max-width: 450px; width: 100%; max-height: 90vh; overflow-y: auto;
+    }
+    input[type="text"], input[type="tel"] {
+      width: 100%; padding: 14px; margin: 10px 0; border: 2px solid #e5e7eb;
+      border-radius: 10px; font-size: 16px; box-sizing: border-box;
+    }
+    .payment-method { background: #fef3c7; padding: 12px; border-radius: 8px; margin: 8px 0; font-size: 0.9rem; }
+    .whatsapp-btn {
+      display: block; background: #25d366; color: white; text-align: center;
+      padding: 15px; border-radius: 10px; text-decoration: none;
+      font-weight: 700; margin: 15px 0;
+    }
+    .refresh-btn {
+      background: #3b82f6; color: white; border: none; padding: 10px 20px;
+      border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 10px; width: 100%;
+    }
+    .refresh-btn:hover { background: #2563eb; }
+    @media (max-width: 768px) {
+      .number-grid { grid-template-columns: repeat(5, 1fr); }
+      .header h1 { font-size: 1.5rem; }
+      body { padding: 10px; }
+      .rifa-selector { padding: 15px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🏍️ RIFAS DE COMPAS</h1>
+      <p>Moy & Aldo | Boletos en Tiempo Real</p>
+    </div>
+    <div class="rifa-selector">
+      <div class="rifa-info">
+        <p><strong>🎁 Premio:</strong> Moto Crossmax 220</p>
+        <p><strong>💰 Precio:</strong> $8 MXN por boleto</p>
+        <p><strong>📅 Sorteo:</strong> Por definir</p>
+        <p><strong>🎲 Método:</strong> Lotería Nacional</p>
+      </div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot available"></div> Disponible</div>
+        <div class="legend-item"><div class="legend-dot sold"></div> Vendido</div>
+        <div class="legend-item"><div class="legend-dot selected"></div> Seleccionado</div>
+      </div>
+      <div class="search-box">
+        <h3 style="color: #1e40af; margin-bottom: 15px; text-align: center;">🔍 Busca tu número de la suerte</h3>
+        <input type="text" id="buscadorBoleto" class="search-input" placeholder="Ingresa 4 dígitos (0000-9999)" maxlength="4">
+        <button onclick="buscarBoleto()" class="btn-search"><i class="fas fa-search"></i> Buscar Boleto</button>
+        <div id="resultadoBusqueda"></div>
+      </div>
+      <div class="random-section">
+        <h3>🎲 Selecciona Boletos al Azar</h3>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px;">
+          <button onclick="seleccionarAleatorios(10)" class="btn-package"><i class="fas fa-random"></i><br>10 al Azar<br><small>$80 MXN</small></button>
+          <button onclick="seleccionarAleatorios(20)" class="btn-package"><i class="fas fa-random"></i><br>20 al Azar<br><small>$160 MXN</small></button>
+          <button onclick="seleccionarAleatorios(50)" class="btn-package"><i class="fas fa-random"></i><br>50 al Azar<br><small>$400 MXN</small></button>
+        </div>
+        <div id="loading" class="loading"><i class="fas fa-spinner"></i> Cargando boletos disponibles...</div>
+        <div class="number-grid" id="grid"></div>
+        <button onclick="cargarBoletosAleatorios()" class="refresh-btn"><i class="fas fa-sync-alt"></i> Recargar boletos</button>
+      </div>
+      <div class="cart-info" id="cartInfo" style="display: none;">
+        <div style="font-size: 1.1rem;">🎫 Boletos seleccionados: <strong id="selectedCount">0</strong></div>
+        <div class="cart-total" id="cartTotal">$0 MXN</div>
+      </div>
+      <button class="btn" onclick="comprarBoletos()" id="btnComprar" disabled><i class="fas fa-ticket"></i> Selecciona tus boletos</button>
+    </div>
+  </div>
+  <div id="modalDatos">
+    <div>
+      <h3 style="color: #1e40af; margin-bottom: 20px; text-align: center;">📝 Completa tus datos</h3>
+      <input type="text" id="inputNombre" placeholder="Nombre completo *">
+      <input type="tel" id="inputTelefono" placeholder="Teléfono WhatsApp *">
+      <button onclick="confirmarCompra()" style="width: 100%; padding: 15px; background: #25d366; color: white; border: none; border-radius: 10px; font-weight: 700; font-size: 1.1rem; margin-top: 15px;">✅ Confirmar reserva</button>
+      <button onclick="cerrarModalDatos()" style="width: 100%; padding: 12px; background: #9ca3af; color: white; border: none; border-radius: 10px; font-weight: 600; margin-top: 10px;">Cancelar</button>
+    </div>
+  </div>
+  <div id="modalPago">
+    <div>
+      <h2 style="color: #10b981; margin-bottom: 20px; text-align: center;">✅ ¡Reserva Exitosa!</h2>
+      <div id="modalResumen" style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 20px;"></div>
+      <h3 style="margin: 20px 0 15px; color: #1e40af;">📋 Datos para pago:</h3>
+      <div class="payment-method"><strong>BBVA - Moises Hernandez</strong><br>CLABE: 012180015364963139</div>
+      <div class="payment-method"><strong>NU - Moises Hernandez</strong><br>CLABE: 638180000175886849</div>
+      <div class="payment-method"><strong>AZTECA - Moises Hernandez</strong><br>CLABE: 127180016164186958</div>
+      <div class="payment-method"><strong>BBVA - Javier Castro</strong><br>CLABE: 012180029263136710</div>
+      <p style="margin: 15px 0; color: #6b7280; font-size: 0.9rem;">⏰ Tienes <strong>24 horas</strong> para realizar el pago.</p>
+      <a id="whatsappLink" href="#" target="_blank" class="whatsapp-btn"><i class="fab fa-whatsapp"></i> Enviar comprobante por WhatsApp</a>
+      <button onclick="cerrarModal()" style="width: 100%; padding: 12px; background: #6b7280; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Entendido</button>
+    </div>
+  </div>
+
+  <script>
+    // ⚠️ REEMPLAZA ESTO CON TU URL DE APPS SCRIPT
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx0BgsHgZyCcGz1mb4JalN4E_bNSCwe-bwJEkJLmbSwXuLiD1egXGCmCwJl2p7gQatNiA/exec';
+    
+    let selectedNumbers = [];
+    let availableNumbers = [];
+    
+    const RIFA_INFO = {
+      3: { nombre: 'Moto Crossmax 220', precio: 8, unidad: '1 boleto', fecha: 'Por definir', sorteo: 'Lotería Nacional' }
+    };
+    
+    // Función helper para llamar a Apps Script
+    function callBackend(action, params) {
+      return fetch(SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, ...params })
+      })
+      .then(response => response.json())
+      .then(result => {
+        if (result.success !== undefined && !result.success) {
+          throw new Error(result.error || result.mensaje || 'Error desconocido');
+        }
+        return result.data !== undefined ? result.data : result;
+      });
+    }
+    
+    window.addEventListener('load', function() {
+      cargarBoletosAleatorios();
+    });
+    
+    function cargarBoletosAleatorios() {
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('grid').innerHTML = '';
+      
+      callBackend('getBoletosDisponibles', { rifaId: 3 })
+        .then(function(boletos) {
+          window.availableNumbers = boletos || [];
+          document.getElementById('loading').style.display = 'none';
+          mostrarBoletosAleatorios();
+        })
+        .catch(function(error) {
+          console.error('Error:', error);
+          document.getElementById('loading').innerHTML = 
+            '<div style="color: #fbbf24; padding: 20px;">⚠️ Error al cargar boletos. Recarga la página.</div>';
+        });
+    }
+    
+    function mostrarBoletosAleatorios() {
+      const grid = document.getElementById('grid');
+      grid.innerHTML = '';
+      
+      if (!availableNumbers || availableNumbers.length === 0) {
+        grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 40px; color: white; background: rgba(0,0,0,0.5); border-radius: 12px;"><i class="fas fa-ticket-slash" style="font-size: 3rem; margin-bottom: 15px; display: block;"></i><strong>No hay boletos disponibles</strong><br><small>Recarga la página o intenta más tarde</small></div>';
+        return;
+      }
+      
+      const numerosMostrar = availableNumbers.sort(() => Math.random() - 0.5).slice(0, 100);
+      
+      numerosMostrar.forEach(function(num) {
+        let numStr = String(num).trim();
+        if (numStr.length < 4 && !isNaN(numStr)) {
+          numStr = numStr.padStart(4, '0');
+        }
+        
+        const div = document.createElement('div');
+        div.className = 'number available';
+        div.textContent = numStr;
+        div.onclick = function() { toggleNumber(numStr, div); };
+        div.title = 'Disponible';
+        grid.appendChild(div);
+      });
+    }
+    
+    function seleccionarAleatorios(cantidad) {
+      if (!availableNumbers || availableNumbers.length === 0) {
+        alert('⚠️ No hay boletos disponibles. Recarga la página.');
+        return;
+      }
+      
+      selectedNumbers = [];
+      document.querySelectorAll('.number.selected').forEach(function(el) {
+        el.classList.remove('selected');
+        el.classList.add('available');
+      });
+      
+      const disponibles = availableNumbers.sort(() => Math.random() - 0.5).slice(0, cantidad);
+      
+      disponibles.forEach(function(num) {
+        let numStr = String(num).trim();
+        if (numStr.length < 4 && !isNaN(numStr)) {
+          numStr = numStr.padStart(4, '0');
+        }
+        selectedNumbers.push(numStr);
+        
+        document.querySelectorAll('.number').forEach(function(el) {
+          if (el.textContent === numStr) {
+            el.classList.remove('available');
+            el.classList.add('selected');
+          }
+        });
+      });
+      
+      updateCart();
+      document.getElementById('cartInfo').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    
+    function buscarBoleto() {
+      const numeroBuscado = document.getElementById('buscadorBoleto').value.trim();
+      const resultadoDiv = document.getElementById('resultadoBusqueda');
+      
+      if (numeroBuscado.length !== 4 || isNaN(numeroBuscado)) {
+        resultadoDiv.innerHTML = '<div class="search-result sold">⚠️ Ingresa un número de 4 dígitos (0000-9999)</div>';
+        return;
+      }
+      
+      callBackend('buscarBoletoPorNumero', { rifaId: 3, numero: numeroBuscado })
+        .then(function(resultado) {
+          if (resultado.encontrado) {
+            if (resultado.estado === 'Disponible') {
+              resultadoDiv.innerHTML = '<div class="search-result available">✅ Boleto ' + resultado.numero + ' DISPONIBLE<br><button onclick="toggleNumber(\'' + resultado.numero + '\', null); document.getElementById(\'resultadoBusqueda\').innerHTML=\'\'; document.getElementById(\'buscadorBoleto\').value=\'\';" style="margin-top: 10px; padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 5px; cursor: pointer;">Seleccionar</button></div>';
+            } else {
+              resultadoDiv.innerHTML = '<div class="search-result sold">❌ Boleto ' + resultado.numero + ' NO DISPONIBLE</div>';
+            }
+          } else {
+            resultadoDiv.innerHTML = '<div class="search-result sold">⚠️ Número no encontrado</div>';
+          }
+        })
+        .catch(function(error) {
+          resultadoDiv.innerHTML = '<div class="search-result sold">❌ Error: ' + error.message + '</div>';
+        });
+    }
+    
+    function toggleNumber(num, element) {
+      if (selectedNumbers.includes(num)) {
+        selectedNumbers = selectedNumbers.filter(function(n) { return n !== num; });
+        if (element) {
+          element.classList.remove('selected');
+          element.classList.add('available');
+        }
+      } else {
+        selectedNumbers.push(num);
+        if (element) {
+          element.classList.remove('available');
+          element.classList.add('selected');
+        }
+      }
+      updateCart();
+    }
+    
+    function updateCart() {
+      const info = RIFA_INFO[3];
+      const cartInfo = document.getElementById('cartInfo');
+      const selectedCount = document.getElementById('selectedCount');
+      const cartTotal = document.getElementById('cartTotal');
+      const btn = document.getElementById('btnComprar');
+      
+      if (selectedNumbers.length > 0) {
+        cartInfo.style.display = 'block';
+        selectedCount.textContent = selectedNumbers.length;
+        const total = selectedNumbers.length * info.precio;
+        cartTotal.textContent = '$' + total + ' MXN';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-cart-plus"></i> Comprar (' + selectedNumbers.length + ') - $' + total;
+      } else {
+        cartInfo.style.display = 'none';
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-ticket"></i> Selecciona tus boletos';
+      }
+    }
+    
+    function comprarBoletos() {
+      if (selectedNumbers.length === 0) { alert('⚠️ Selecciona al menos un boleto'); return; }
+      document.getElementById('inputNombre').value = '';
+      document.getElementById('inputTelefono').value = '';
+      document.getElementById('modalDatos').style.display = 'flex';
+    }
+    
+    function confirmarCompra() {
+      const nombre = document.getElementById('inputNombre').value.trim();
+      const telefono = document.getElementById('inputTelefono').value.trim();
+      
+      if (!nombre) { alert('⚠️ El nombre es obligatorio'); return; }
+      if (!telefono) { alert('⚠️ El teléfono es obligatorio'); return; }
+      
+      document.getElementById('modalDatos').style.display = 'none';
+      
+      const btn = document.getElementById('btnComprar');
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+      
+      callBackend('reservarBoletos', {
+        rifaId: 3,
+        numeros: selectedNumbers,
+        nombre: nombre,
+        telefono: telefono,
+        email: ''
+      })
+      .then(function(response) {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        
+        if (response.exito) {
+          const info = RIFA_INFO[3];
+          const total = response.total * info.precio;
+          mostrarModalPago(nombre, response.boletosReservados, total, telefono);
+          selectedNumbers = [];
+          updateCart();
+          cargarBoletosAleatorios();
+        } else {
+          alert(response.mensaje);
+          cargarBoletosAleatorios();
+        }
+      })
+      .catch(function(error) {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+        alert('❌ Error: ' + error.message);
+      });
+    }
+    
+    function cerrarModalDatos() { document.getElementById('modalDatos').style.display = 'none'; }
+    
+    function mostrarModalPago(nombre, boletos, total, telefono) {
+      document.getElementById('modalResumen').innerHTML = 
+        '<p><strong>👤 Cliente:</strong> ' + nombre + '</p>' +
+        '<p><strong>🎫 Boletos:</strong> ' + boletos.join(', ') + '</p>' +
+        '<p><strong>💰 Total:</strong> <span style="color: #059669; font-size: 1.3rem;">$' + total + ' MXN</span></p>';
+      
+      const mensaje = 'Hola Moy & Aldo! Acabo de reservar boletos: ' + boletos.join(', ') + '. Total: $' + total;
+      document.getElementById('whatsappLink').href = 'https://wa.me/5216674252118?text=' + encodeURIComponent(mensaje);
+      document.getElementById('modalPago').style.display = 'flex';
+    }
+    
+    function cerrarModal() { document.getElementById('modalPago').style.display = 'none'; }
+  </script>
+</body>
+</html>
